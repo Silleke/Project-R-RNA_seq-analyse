@@ -11,6 +11,4 @@ library(rtracklayer)
 
 data = read.delim(file.choose(), sep="\t", skip=1)
 wcfs1_annotation = import.gff(file.choose())
-nc8_annotation = import.gff(file.choose())
 data_annotated_wcfs1 = merge(data, wcfs1_annotation, by.x = "ID", by.y = "locus_tag")
-data_annotated_nc8 = merge(data, nc8_annotation, by.x = "ID", by.y = "locus_tag")
