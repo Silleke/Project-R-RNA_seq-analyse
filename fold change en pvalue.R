@@ -1,3 +1,15 @@
+source("https://bioconductor.org/biocLite.R") # install bioconductor if not already installed
+library(limma)
+library(edgeR) # for DGEList
+library(RColorBrewer)
+library(MASS)
+library(lattice)
+library(ggplot2)
+library(mixOmics)
+library(gplots)
+biocLite("HTSFilter") 
+
+
 WCFS1_anno <- read.delim(file="C:/Users/xx_xx/Downloads/WCFS1_anno1.txt", header=TRUE, sep="\t")
 RNA <- read.delim(file="C:/Users/xx_xx/Downloads/RNA-Seq-counts.txt", header=TRUE, sep="\t")
 
@@ -25,9 +37,10 @@ y_WCFS1 <- DGEList(counts=merged_data[,2:5],group=group_WCFS1)
 y_NC8 <- DGEList(counts=merged_data[,6:9],group=group_NC8)
 
 #filter data
-keep.genes <- rowSums(cpm(y)>50) >= 2
-y_NC8 <- y_NC8[keep.genes,]
-y_WCFS1 <- y_WCFS1[keep.genes,]
+keep.genes_WCFS1 <- rowSums(cpm(y_WCFS1)>50) >= 2
+keep.genes_NC8 <- rowSums(cpm(y_NC8)>50) >= 2
+y_NC8 <- y_NC8[keep.genes_NC8,]
+y_WCFS1 <- y_WCFS1[keep.genes_WCFS1,]
 y_NC8$samples$lib.size <- colSums(y_NC8$counts)
 y_WCFS1$samples$lib.size <- colSums(y_WCFS1$counts)
 
@@ -87,3 +100,40 @@ res_NC8<-topTags(fit_NC8)
 print(res_NC8)
 res_WCFS1<-topTags(fit_WCFS1)
 print(res_WCFS1)
+
+write.csv(res_NC8, file = "res_NC8.csv")
+read.csv("res_NC8.csv", row.names = 1)
+write.csv(res_WCFS1, file = "res_WCFS1.csv")
+read.csv("res_WCFS1.csv", row.names = 1)
+
+
+write.csv(fit_NC8[["table"]], file = "all_NC8.csv")
+#read.csv("all_NC8.csv", row.names = 1)
+write.csv(fit_WCFS1[["table"]], file = "all_WCFS1.csv")
+#read.csv("all_WCFS1.csv", row.names = 1)
+
+
+#fold changes rib-glc
+
+mc_NC8 <- makeContrasts(exp.r=NC8.rib-NC8.glc, levels=design_NC8)
+mc_WCFS1 <- makeContrasts(exp.r=WCFS1.rib-WCFS1.glc, levels=design_WCFS1)
+
+fit_NC8 <- glmLRT(fit_NC8, contrast=mc_NC8)
+fit_WCFS1 <- glmLRT(fit_WCFS1, contrast=mc_WCFS1)
+
+#print top Tags
+res_NC8<-topTags(fit_NC8)
+print(res_NC8)
+res_WCFS1<-topTags(fit_WCFS1)
+print(res_WCFS1)
+
+write.csv(res_NC8, file = "res_NC8rib_glc.csv")
+read.csv("res_NC8.csv", row.names = 1)
+write.csv(res_WCFS1, file = "res_WCFS1rib_glc.csv")
+read.csv("res_WCFS1.csv", row.names = 1)
+
+
+write.csv(fit_NC8[["table"]], file = "all_NC8rib_glc.csv")
+#read.csv("all_NC8rib-glc.csv", row.names = 1)
+write.csv(fit_WCFS1[["table"]], file = "all_WCFS1rib_glc.csv")
+#read.csv("all_WCFS1rib-glc.csv", row.names = 1)
